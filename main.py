@@ -1,6 +1,9 @@
-def main():
-    print("Hello from pdf-extratext!")
+from fastapi import FastAPI
 
+# Inicializamos la aplicación
+app = FastAPI()
 
-if __name__ == "__main__":
-    main()
+# Creamos el endpoint GET en la ruta /health
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
