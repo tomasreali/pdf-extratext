@@ -1,9 +1,15 @@
 from fastapi import FastAPI
+# Importamos la configuración
+from config import settings
 
-# Inicializamos la aplicación
-app = FastAPI()
+# Le decimos a FastAPI que use el nombre de la app que está en el .env
+app = FastAPI(title=settings.app_name)
 
-# Creamos el endpoint GET en la ruta /health
 @app.get("/health")
 def health_check():
-    return {"status": "ok"}
+    return {
+        "status": "ok", 
+        "mensaje": "Servidor funcionando perfecto",
+        # Mostramos el nombre para comprobación
+        "app": settings.app_name
+    }
