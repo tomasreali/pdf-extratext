@@ -10,5 +10,6 @@ dependencies = [
     "pydantic-settings>=2.13.1",
     "pymongo>=4.16.0",
     "pypdf2>=3.0.1",
+    "python-multipart>=0.0.26",
     "uvicorn>=0.43.0",
 ]
