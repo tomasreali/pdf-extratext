@@ -1,34 +1,46 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
-# Importamos la configuración
 from config import settings
+import pdfplumber # NUEVO: Importamos la librería
 
-# Le decimos a FastAPI que use el nombre de la app que está en el .env
 app = FastAPI(title=settings.app_name)
+
+# NUEVO: Función para extraer texto
+def extraer_texto_pdf(archivo) -> str:
+    texto_completo = ""
+    # Abrimos el archivo PDF directamente desde la memoria
+    with pdfplumber.open(archivo) as pdf:
+        for pagina in pdf.pages:
+            texto_extraido = pagina.extract_text()
+            if texto_extraido:
+                texto_completo += texto_extraido + "\n"
+    return texto_completo
+
 
 @app.get("/health")
 def health_check():
     return {
         "status": "ok", 
         "mensaje": "Servidor funcionando perfecto",
-        # Mostramos el nombre para comprobación
         "app": settings.app_name
     }
 
-#3. Agregamos el nuevo endpoint del paso 3
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    #Subtarea 3: Validamos extension y tipo de contenido
     es_pdf = file.filename.endswith(".pdf")
     es_mime_pdf = file.content_type == "application/pdf"
 
     if not es_pdf and not es_mime_pdf:
-        # Subtarea 4: Error si no es PDF
         raise HTTPException(
-            status_code=400,
-            detail="El archivo debe ser un documento PDF valido"
+            status_code=400, 
+            detail="El archivo debe ser un documento PDF válido."
         )
-    return{
-        "filename": file.filename,
-        "content_type": file.content_type,
-        "mensaje": "PDF recibido y validado correctamente"
+    
+    # NUEVO: Usamos nuestra función pasándole el archivo en memoria (file.file)
+    texto_crudo = extraer_texto_pdf(file.file)
+    
+    # Devolvemos el texto extraído para comprobar que funciona
+    return {
+        "filename": file.filename, 
+        "mensaje": "PDF recibido y procesado correctamente",
+        "texto_extraido": texto_crudo
     }
