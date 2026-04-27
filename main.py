@@ -5,6 +5,7 @@ from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from config.database import db
 import pdfplumber
+import hashlib
 
 app = FastAPI(title=settings.app_name)
 
@@ -18,6 +19,8 @@ def extraer_texto_pdf(archivo) -> str:
                 texto_completo += texto_extraido + "\n"
     return texto_completo
 
+def generar_resumen_mock(texto: str) -> str:
+    return "Este es un resumen simulado del texto. Aca en el futuro ira la respuesta de la IA (ollama)"
 
 @app.get("/health")
 def health_check():
@@ -30,33 +33,64 @@ def health_check():
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    
+    # 1. Validación de extensión (Del Paso 3)
     es_pdf = file.filename.endswith(".pdf")
     es_mime_pdf = file.content_type == "application/pdf"
-
     if not es_pdf and not es_mime_pdf:
+        raise HTTPException(status_code=400, detail="El archivo debe ser un documento PDF válido.")
+    
+    # Leemos el archivo en la memoria (lo necesitamos para pesar, hashear y extraer)
+    contenido = await file.read()
+    
+    # --- NUEVO: Subtarea 1 (Validar tamaño máximo) ---
+    # 5MB en bytes (5 * 1024 * 1024)
+    LIMITE_MB = 5
+    TAMANO_MAXIMO_BYTES = LIMITE_MB * 1024 * 1024
+    
+    if len(contenido) > TAMANO_MAXIMO_BYTES:
         raise HTTPException(
             status_code=400, 
-            detail="El archivo debe ser un documento PDF válido."
+            detail=f"El archivo es demasiado grande. El máximo permitido es {LIMITE_MB}MB."
         )
 
-    # 🔹 Extraer texto
-    texto_crudo = extraer_texto_pdf(file.file)
+    # --- NUEVO: Subtarea 2 (Calcular el Checksum) ---
+    # Le sacamos la huella digital al contenido del archivo
+    checksum_calculado = hashlib.sha256(contenido).hexdigest()
 
-    # 🔹 Crear documento para Mongo
-    documento = {
+    # --- NUEVO: Subtarea 3 (Buscar duplicados en MongoDB) ---
+    # Buscamos si ya existe algún documento con esta misma huella
+    duplicado = db["documents"].find_one({"checksum": checksum_calculado})
+    if duplicado:
+        # 409 Conflict es el código HTTP ideal para "esto ya existe"
+        raise HTTPException(
+            status_code=409, 
+            detail="Este documento ya fue subido y procesado previamente."
+        )
+    
+    # --- Extracción (El Paso 4 de los chicos) ---
+    # (Acá iría el código real de pdfplumber usando la variable 'contenido')
+    texto_extraido = "Texto de prueba extraído del PDF..." 
+    
+    # --- NUEVO: Subtarea 4 (Llamar al mock) ---
+    resumen_generado = generar_resumen_mock(texto_extraido)
+    
+    # --- NUEVO: Subtarea 5 (Guardar Checksum y Resumen en MongoDB) ---
+    nuevo_documento = {
         "filename": file.filename,
-        "texto": texto_crudo
+        "content_type": file.content_type,
+        "text": texto_extraido,
+        "resumen": resumen_generado,
+        "checksum": checksum_calculado # Guardamos la huella para futuras comparaciones
     }
-
-    # 🔹 Guardar en MongoDB
-    resultado = collection.insert_one(documento)
-
-    # 🔹 Responder con ID
+    
+    resultado = db["documents"].insert_one(nuevo_documento)
+    
     return {
-        "mensaje": "PDF procesado y guardado correctamente",
+        "id": str(resultado.inserted_id), 
         "filename": file.filename,
-        "id": str(resultado.inserted_id)
+        "checksum": checksum_calculado,
+        "resumen": resumen_generado,
+        "mensaje": "PDF subido, validado y guardado correctamente."
     }
 
 @app.get("/documents")
