@@ -6,6 +6,11 @@ from bson.errors import InvalidId
 from config.database import db
 import pdfplumber
 import hashlib
+from pydantic import BaseModel
+
+# Creamos un "molde" para los datos que esperamos recibir en el PATCH
+class NombreUpdate(BaseModel):
+    nuevo_nombre: str
 
 app = FastAPI(title=settings.app_name)
 
@@ -130,3 +135,38 @@ def get_document_by_id(doc_id: str):
     # Si lo encontró, convertimos el ID a string para que FastAPI lo pueda mostrar en pantalla
     documento["_id"] = str(documento["_id"])
     return documento
+
+# --- NUEVO: Subtarea 3 (Actualizar el nombre del archivo) ---
+@app.patch("/documents/{doc_id}")
+def update_document_name(doc_id: str, datos: NombreUpdate):
+    try:
+        obj_id = ObjectId(doc_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Formato de ID inválido.")
+        
+    # Buscamos y actualizamos usando el operador $set de MongoDB
+    resultado = db["documents"].update_one(
+        {"_id": obj_id},
+        {"$set": {"filename": datos.nuevo_nombre}}
+    )
+    
+    if resultado.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Documento no encontrado.")
+        
+    return {"mensaje": f"Nombre actualizado a {datos.nuevo_nombre}"}
+
+
+# --- NUEVO: Subtarea 2 (Borrar un documento) ---
+@app.delete("/documents/{doc_id}")
+def delete_document(doc_id: str):
+    try:
+        obj_id = ObjectId(doc_id)
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Formato de ID inválido.")
+        
+    resultado = db["documents"].delete_one({"_id": obj_id})
+    
+    if resultado.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Documento no encontrado.")
+        
+    return {"mensaje": "Documento eliminado correctamente"}
