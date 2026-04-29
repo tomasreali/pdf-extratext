@@ -37,34 +37,36 @@ Gracias a Docker, la aplicación está completamente empaquetada. No es necesari
 ### Paso 1: Clonar el repositorio.
 
 Abrir una terminal y descargar el proyecto ejecutando:
-
-"git clone https://github.com/tomasreali/pdf-extratext.git"
-
+```
+git clone https://github.com/tomasreali/pdf-extratext.git
+```
 Luego de que se descarguen todas las carpetas, ejecutar:
-
+```
 cd pdf-extratext
-
+```
 ### Paso 2: Configurar variables de entorno.
 
-En la raíz del proyecto (al mismo nivel que el archivo docker-compose.yml), crear un archivo llamado .env y pegar la siguiente configuración:
+En la raíz del proyecto (al mismo nivel que el archivo docker-compose.yml), crear un archivo llamado ".env" y pegar la siguiente configuración:
 
+```env
 APP_NAME="Extraccion PDF API"
 MONGO_URL=mongodb://mongodb:27017
 OLLAMA_URL=http://ollama:11434
 DB_NAME="pdf_db"
+```
 
 ### Paso 3: Levantar la infraestructura.
 
 Asegurarse de tener Docker Desktop abierto y ejecutándose de fondo. Luego, en la terminal del proyecto, ejecutar:
-
+```
 docker-compose up --build -d
-
+```
 ### Paso 4: Descargar el modelo de Inteligencia Artificial
 
 Se necesita descargar el modelo de lenguaje Llama 3.2. En la misma terminal, ejecutar:
-
+```
 docker exec -it pdf_ollama ollama run llama3.2
-
+```
 Cuando aparezca el cursor >>> indicando que el chat inició, escribir /bye y presionar Enter para salir.
 
 ### Paso 5: Usar la API.
@@ -72,5 +74,6 @@ Cuando aparezca el cursor >>> indicando que el chat inició, escribir /bye y pre
 Para interactuar con ella, abrir un navegador web e ingresar a la documentación interactiva de FastAPI (Swagger): "http://localhost:8000/docs"
 
 Para apagar el proyecto cuando se termine de usar, ejecutar:
-
+```
 docker-compose down
+```
