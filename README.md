@@ -34,11 +34,11 @@ Gracias a Docker, la aplicación está completamente empaquetada. No es necesari
    * *Nota para usuarios de Windows: Asegurarse de tener habilitada la Virtualización en la BIOS y el motor WSL2 activado.*
 2. Tener instalado **Git**.
 
-# Paso 1: Clonar el repositorio.
+### Paso 1: Clonar el repositorio.
 
 Abrir una terminal y descargar el proyecto ejecutando:
 
-git clone https://github.com/tomasreali/pdf-extratext.git
+"git clone https://github.com/tomasreali/pdf-extratext.git"
 
 Luego de que se descarguen todas las carpetas, ejecutar:
 
