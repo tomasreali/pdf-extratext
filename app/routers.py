@@ -4,7 +4,8 @@ from repository.db_repo import (
     obtener_todos, obtener_por_id, obtener_por_checksum,
     guardar_documento, actualizar_nombre, eliminar_documento
 )
-from service.pdf_service import generar_resumen_mock, calcular_checksum, extraer_texto_mock
+# MODIFICADO: Importamos la función de IA y la de extracción REAL
+from service.pdf_service import generar_resumen_ia, calcular_checksum, extraer_texto_real
 
 # Creamos el enrutador
 router = APIRouter()
@@ -30,23 +31,31 @@ def get_document_by_id(doc_id: str):
 
 @router.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
+    # 1. Validación de extensión
     es_pdf = file.filename.endswith(".pdf")
     es_mime_pdf = file.content_type == "application/pdf"
     if not es_pdf and not es_mime_pdf:
         raise HTTPException(status_code=400, detail="El archivo debe ser un documento PDF válido.")
     
+    # 2. Lectura y validación de tamaño
     contenido = await file.read()
     TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024
     if len(contenido) > TAMANO_MAXIMO_BYTES:
         raise HTTPException(status_code=400, detail="El archivo es demasiado grande. El máximo permitido es 5MB.")
 
+    # 3. Verificación de duplicados (Checksum)
     checksum_calculado = calcular_checksum(contenido)
     if obtener_por_checksum(checksum_calculado):
         raise HTTPException(status_code=409, detail="Este documento ya fue subido y procesado previamente.")
     
-    texto_extraido = extraer_texto_mock()
-    resumen_generado = generar_resumen_mock(texto_extraido)
+    # 4. Extracción de texto (¡AHORA ES REAL!)
+    # Le pasamos la variable "contenido" que tiene los bytes del archivo
+    texto_extraido = extraer_texto_real(contenido) 
     
+    # 5. Generación de resumen con la IA
+    resumen_generado = generar_resumen_ia(texto_extraido)
+    
+    # 6. Persistencia en BD
     nuevo_documento = {
         "filename": file.filename,
         "content_type": file.content_type,
@@ -62,7 +71,7 @@ async def upload_pdf(file: UploadFile = File(...)):
         "filename": file.filename,
         "checksum": checksum_calculado,
         "resumen": resumen_generado,
-        "mensaje": "PDF subido, validado y guardado correctamente."
+        "mensaje": "PDF subido, validado y resumido con IA exitosamente."
     }
 
 @router.patch("/documents/{doc_id}")
