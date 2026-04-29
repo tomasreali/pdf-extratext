@@ -59,8 +59,8 @@ def test_error_tamano():
 def test_get_documents():
     response = client.get("/documents")
     assert response.status_code == 200
-    # Verificamos que la respuesta sea una lista (list)
-    assert isinstance(response.json(), list)
+    # Verificamos que la respuesta sea un diccionario y contenga la clave "documentos"
+    assert "documentos" in response.json()
 
 def test_patch_document():
     global doc_id_prueba
