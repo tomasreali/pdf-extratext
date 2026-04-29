@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     mongo_url: str
     db_name: str
+    ollama_url: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
