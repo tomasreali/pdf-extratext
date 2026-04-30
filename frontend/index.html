@@ -3,64 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF IA | Resúmenes Inteligentes</title>
-    <!-- Tailwind CSS por CDN (Cero instalación) -->
+    <title>PDF IA | Panel de Control</title>
+    <!-- Tailwind CSS por CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Íconos de Phosphor Icons (Livianos y minimalistas) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen p-4 md:p-8 flex justify-center">
 
-    <!-- Tarjeta Principal Minimalista -->
-    <main class="bg-white w-full max-w-2xl rounded-2xl shadow-sm border border-gray-100 p-8">
+    <!-- Contenedor Principal (Grilla de 2 columnas) -->
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         
-        <!-- Encabezado -->
-        <header class="text-center mb-8">
-            <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Analizador de PDF con IA</h1>
-            <p class="text-sm text-gray-500 mt-2">Sube tu documento y Llama 3.2 hará el resto.</p>
-        </header>
+        <!-- ========================================== -->
+        <!-- COLUMNA IZQUIERDA: SUBIDA Y RESULTADOS     -->
+        <!-- ========================================== -->
+        <main class="bg-white lg:col-span-2 rounded-2xl shadow-sm border border-gray-100 p-8">
+            
+            <header class="text-center mb-8">
+                <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Analizador de PDF con IA</h1>
+                <p class="text-sm text-gray-500 mt-2">Sube tu documento y Llama 3.2 hará el resto.</p>
+            </header>
 
-        <!-- Zona de subida de archivo -->
-        <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors">
-            <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="updateFileName()">
-            <label for="fileInput" class="cursor-pointer flex flex-col items-center justify-center">
-                <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                </svg>
-                <span id="fileNameDisplay" class="text-sm text-gray-600 font-medium">Haz clic para seleccionar un PDF</span>
-            </label>
-        </div>
-
-        <!-- Botón de Acción -->
-        <button id="uploadBtn" onclick="uploadAndAnalyze()" class="w-full mt-6 bg-black text-white font-medium py-3 px-4 rounded-xl hover:bg-gray-800 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">
-            Generar Resumen
-        </button>
-
-        <!-- Estado de Carga (Spinner oculto por defecto) -->
-        <div id="loadingState" class="hidden mt-8 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
-            <p class="text-sm text-gray-500 mt-3 animate-pulse">La IA está leyendo y procesando el documento...</p>
-        </div>
-
-        <!-- Resultado del Resumen (Oculto por defecto) -->
-        <div id="resultBox" class="hidden mt-8">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Resultado Generado:</h3>
-            <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
-                <!-- Se usa whitespace-pre-wrap para respetar los saltos de línea de la IA -->
-                <p id="summaryText" class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap"></p>
+            <!-- Zona de subida -->
+            <div class="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:bg-gray-50 transition-colors">
+                <input type="file" id="fileInput" accept="application/pdf" class="hidden" onchange="updateFileName()">
+                <label for="fileInput" class="cursor-pointer flex flex-col items-center justify-center">
+                    <i class="ph ph-cloud-arrow-up text-4xl text-gray-400 mb-3"></i>
+                    <span id="fileNameDisplay" class="text-sm text-gray-600 font-medium">Haz clic para seleccionar un PDF</span>
+                </label>
             </div>
-        </div>
-        
-    </main>
 
-    <!-- Lógica de Conexión (JavaScript Vanilla) -->
+            <!-- Botón de Acción -->
+            <button id="uploadBtn" onclick="uploadAndAnalyze()" class="w-full mt-6 bg-black text-white font-medium py-3 px-4 rounded-xl hover:bg-gray-800 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed">
+                Generar Resumen
+            </button>
+
+            <!-- Estado de Carga -->
+            <div id="loadingState" class="hidden mt-8 text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black mx-auto"></div>
+                <p class="text-sm text-gray-500 mt-3 animate-pulse">La IA está procesando la solicitud...</p>
+            </div>
+
+            <!-- Resultado del Resumen -->
+            <div id="resultBox" class="hidden mt-8">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Resultado:</h3>
+                    <span id="resultDocId" class="text-xs text-gray-400 font-mono"></span>
+                </div>
+                <div class="bg-gray-50 rounded-xl p-5 border border-gray-100">
+                    <p id="summaryText" class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+            </div>
+        </main>
+
+        <!-- ========================================== -->
+        <!-- COLUMNA DERECHA: HISTORIAL DE DOCUMENTOS   -->
+        <!-- ========================================== -->
+        <aside class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col h-[800px]">
+            <header class="mb-5">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i class="ph ph-clock-counter-clockwise"></i> Historial
+                </h2>
+                <p class="text-xs text-gray-500 mt-1">Documentos procesados anteriormente.</p>
+            </header>
+
+            <!-- Buscador -->
+            <div class="relative mb-4">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                <input type="text" id="searchInput" onkeyup="filterHistory()" placeholder="Buscar por nombre o ID..." 
+                    class="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-gray-400 focus:bg-white transition-colors">
+            </div>
+
+            <!-- Lista de Historial -->
+            <div id="historyList" class="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
+                <!-- Los items se inyectan acá por JavaScript -->
+                <div class="text-center text-sm text-gray-400 mt-10">Cargando historial...</div>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- LÓGICA DE CONEXIÓN (JAVASCRIPT)            -->
+
     <script>
+        const API_URL = 'http://localhost:8000';
+        let globalDocuments = []; // Para guardar el historial y poder filtrarlo
+
+        // Elementos UI
         const fileInput = document.getElementById('fileInput');
         const fileNameDisplay = document.getElementById('fileNameDisplay');
         const uploadBtn = document.getElementById('uploadBtn');
         const loadingState = document.getElementById('loadingState');
         const resultBox = document.getElementById('resultBox');
         const summaryText = document.getElementById('summaryText');
+        const resultDocId = document.getElementById('resultDocId');
+        const historyList = document.getElementById('historyList');
 
-        // Cambia el texto cuando seleccionás un archivo
+        // Inicializar
+        document.addEventListener("DOMContentLoaded", fetchHistory);
+
+        // Actualizar nombre archivo seleccionado
         function updateFileName() {
             if (fileInput.files.length > 0) {
                 fileNameDisplay.textContent = fileInput.files[0].name;
@@ -68,6 +110,7 @@
             }
         }
 
+        // 1. SUBIR NUEVO PDF (POST /upload)
         async function uploadAndAnalyze() {
             if (fileInput.files.length === 0) {
                 alert("Por favor, selecciona un PDF primero.");
@@ -78,37 +121,154 @@
             const formData = new FormData();
             formData.append("file", file);
 
-            // UI: Ocultar resultado anterior, mostrar loading, deshabilitar botón
-            resultBox.classList.add('hidden');
-            loadingState.classList.remove('hidden');
-            uploadBtn.disabled = true;
+            setLoading(true);
 
             try {
-                // Llamada real a tu API en Docker
-                const response = await fetch('http://localhost:8000/upload', {
+                const response = await fetch(`${API_URL}/upload`, {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || "Error al procesar el archivo");
-                }
-
-                const data = await response.json();
+                if (!response.ok) throw new Error("Error al procesar el archivo");
                 
-                // UI: Ocultar loading, mostrar resultado
-                loadingState.classList.add('hidden');
-                resultBox.classList.remove('hidden');
-                summaryText.textContent = data.resumen;
+                const data = await response.json();
+                showResult(data.resumen, data.id || "Nuevo");
+                
+                // Refrescar historial tras subir uno nuevo
+                fetchHistory(); 
 
             } catch (error) {
-                loadingState.classList.add('hidden');
                 alert("Ocurrió un error: " + error.message);
-            } finally {
-                // UI: Restaurar botón
+                setLoading(false);
+            }
+        }
+
+        // 2. OBTENER HISTORIAL (GET /documents)
+        async function fetchHistory() {
+            try {
+                const response = await fetch(`${API_URL}/documents`);
+                if (!response.ok) throw new Error("No se pudo cargar el historial");
+                
+                const data = await response.json();
+                
+                // --- ACÁ ESTÁ EL CAMBIO MÁGICO ---
+                // Tu API devuelve { "documentos": [...] } en vez de [...] directo
+                globalDocuments = data.documentos || data; 
+                // ---------------------------------
+                
+                renderHistory(globalDocuments);
+            } catch (error) {
+                historyList.innerHTML = `<div class="text-xs text-red-500 text-center">Error al cargar historial.</div>`;
+            }
+        }
+
+        // 3. RENDERIZAR LISTA HISTORIAL
+        function renderHistory(docs) {
+            historyList.innerHTML = "";
+            
+            if (docs.length === 0) {
+                historyList.innerHTML = `<div class="text-xs text-gray-400 text-center mt-10">No hay documentos aún.</div>`;
+                return;
+            }
+
+            // Invertir para mostrar los más nuevos arriba
+            docs.reverse().forEach(doc => {
+                // Adaptar estas keys según lo que devuelva tu API (ej: doc.filename, doc.created_at)
+                const docName = doc.filename || "Documento sin nombre";
+                const docId = doc.id || doc._id; // Soporte para ID de Mongo o genérico
+                const docDate = doc.created_at ? new Date(doc.created_at).toLocaleDateString('es-ES') : "Fecha desc.";
+
+                const card = document.createElement('div');
+                card.className = "p-3 bg-gray-50 border border-gray-100 rounded-xl hover:border-gray-300 transition-colors flex flex-col gap-2";
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="truncate pr-2">
+                            <h4 class="text-sm font-medium text-gray-800 truncate" title="${docName}">${docName}</h4>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[10px] text-gray-400 font-mono bg-gray-200 px-1.5 py-0.5 rounded">ID: ${docId.substring(0,6)}...</span>
+                                <span class="text-[10px] text-gray-400 flex items-center gap-1"><i class="ph ph-calendar"></i> ${docDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 mt-1 border-t border-gray-200 pt-2">
+                        <button onclick="viewDocument('${docId}')" class="flex-1 flex justify-center items-center gap-1 text-xs py-1.5 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 text-gray-700 transition-colors">
+                            <i class="ph ph-eye"></i> Ver
+                        </button>
+                        <button onclick="deleteDocument('${docId}')" class="flex-1 flex justify-center items-center gap-1 text-xs py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">
+                            <i class="ph ph-trash"></i> Borrar
+                        </button>
+                    </div>
+                `;
+                historyList.appendChild(card);
+            });
+        }
+
+        // 4. VER DOCUMENTO ESPECÍFICO (GET /documents/{doc_id})
+        async function viewDocument(id) {
+            setLoading(true);
+            try {
+                const response = await fetch(`${API_URL}/documents/${id}`);
+                if (!response.ok) throw new Error("No se pudo cargar el documento");
+                
+                const data = await response.json();
+                // Ajustar 'data.resumen' a la llave exacta que te devuelva el GET
+                showResult(data.resumen || "No hay resumen disponible para este archivo.", id);
+            } catch (error) {
+                alert("Error al abrir el documento.");
+                setLoading(false);
+            }
+        }
+
+        // 5. BORRAR DOCUMENTO (DELETE /documents/{doc_id})
+        async function deleteDocument(id) {
+            if (!confirm("¿Estás seguro de que deseas eliminar este documento del historial?")) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/documents/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error("No se pudo eliminar");
+                
+                // Si el borrado fue exitoso, limpiar la pantalla si estábamos viendo ese documento
+                if(resultDocId.textContent.includes(id)) {
+                    resultBox.classList.add('hidden');
+                }
+                
+                // Refrescar lista
+                fetchHistory();
+            } catch (error) {
+                alert("Error al borrar el documento.");
+            }
+        }
+
+        // 6. FILTRAR HISTORIAL LOCALMENTE
+        function filterHistory() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = globalDocuments.filter(doc => {
+                const name = (doc.filename || "").toLowerCase();
+                const id = (doc.id || doc._id || "").toLowerCase();
+                return name.includes(query) || id.includes(query);
+            });
+            renderHistory(filtered);
+        }
+
+        // Utilidades UI
+        function setLoading(isLoading) {
+            if(isLoading) {
+                resultBox.classList.add('hidden');
+                loadingState.classList.remove('hidden');
+                uploadBtn.disabled = true;
+            } else {
+                loadingState.classList.add('hidden');
                 uploadBtn.disabled = false;
             }
+        }
+
+        function showResult(text, id) {
+            setLoading(false);
+            resultBox.classList.remove('hidden');
+            summaryText.textContent = text;
+            resultDocId.textContent = id !== "Nuevo" ? `ID: ${id}` : "";
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Sube la pantalla para ver el resultado
         }
     </script>
 </body>

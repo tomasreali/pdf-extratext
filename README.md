@@ -2,6 +2,10 @@
 
 Extrae texto de un PDF proporcionado por el usuario y genera un resumen usando IA.
 
+## Integrantes
+
+Reali Tomás, Calvente Matías, Barros Nazareno, Parola Marcos, Rossi Emiliano, Del Pozo Mateo, Altava Julián
+
 ## Tecnología
 - Python 3.12
 - uv (manejo de dependencias)
@@ -69,7 +73,7 @@ docker exec -it pdf_ollama ollama run llama3.2
 ```
 Cuando aparezca el cursor >>> indicando que el chat inició, escribir /bye y presionar Enter para salir.
 
-### Paso 5: Usar la API.
+### Usar la API.
 
 Para interactuar con ella, abrir un navegador web e ingresar a la documentación interactiva de FastAPI (Swagger): "http://localhost:8000/docs"
 
@@ -77,3 +81,6 @@ Para apagar el proyecto cuando se termine de usar, ejecutar:
 ```
 docker-compose down
 ```
+### Usar el Frontend
+
+Para interactuar con el frontend, se debe dirigir a la carpeta "frontend", desplegarla y hacer click derecho en "index.html" y abrirlo con Live Server.
