@@ -1,0 +1,57 @@
+@startuml
+skinparam style strictuml
+skinparam classAttributeIconSize 0
+skinparam NoteBackgroundColor white
+
+class DocumentController {
+  + upload_pdf(file: UploadFile): dict
+  + get_documents(): list
+  + get_document(doc_id: str): dict
+  + update_document_name(doc_id: str, new_name: str): dict
+  + delete_document(doc_id: str): dict
+}
+
+class Validador {
+  + validar_formato_pdf(file: UploadFile): bool
+  + validar_checksum_duplicado(checksum: str): bool
+}
+
+class DocumentService {
+  + extraer_texto(file_content: bytes): str
+  + generar_resumen_ia(texto: str): str
+  + calcular_checksum(file_content: bytes): str
+}
+
+class Repository {
+  - db: MongoDB_Collection
+  + save(document_data: dict): str
+  + find_by_checksum(checksum: str): dict
+  + get_all(): list
+  + get_by_id(doc_id: str): dict
+  + update(doc_id: str, data: dict): bool
+  + delete(doc_id: str): bool
+}
+
+class DocumentModel <<Entity>> {
+  + _id: ObjectId
+  + filename: str
+  + content_type: str
+  + resumen: str
+  + checksum: str
+  + created_at: datetime
+}
+
+class Ollama_IA <<External Service>> {
+  + url: str = "http://ollama:11434"
+  + generate(prompt: str, model: str): str
+}
+
+' Relaciones entre las clases
+DocumentController ..> Validador : <<usa>>
+DocumentController --> DocumentService : <<delega lógica a>>
+DocumentController --> Repository : <<gestiona datos con>>
+
+DocumentService --> Ollama_IA : <<consume API>>
+Repository --> DocumentModel : <<persiste>>
+
+@enduml
