@@ -63,8 +63,14 @@ DB_NAME="pdf_db"
 
 Asegurarse de tener Docker Desktop abierto y ejecutándose de fondo. Luego, en la terminal del proyecto, ejecutar:
 ```
-docker-compose up --build -d
+Levantar la Base de Datos primero: docker-compose -f docker-compose.db.yml up -d
+Levantar la API y la IA: docker-compose up --build -d
+
 ```
+### Usar el Frontend
+
+Levantar el Frontend: Abrir el nuevo repositorio en VS Code y darle al botón de Live Server (Puerto 5500).
+
 ### Paso 4: Descargar el modelo de Inteligencia Artificial
 
 Se necesita descargar el modelo de lenguaje Llama 3.2. En la misma terminal, ejecutar:
@@ -81,6 +87,3 @@ Para apagar el proyecto cuando se termine de usar, ejecutar:
 ```
 docker-compose down
 ```
-### Usar el Frontend
-
-Para interactuar con el frontend, se debe dirigir a la carpeta "frontend", desplegarla y hacer click derecho en "index.html" y abrirlo con Live Server.
