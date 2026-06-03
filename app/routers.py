@@ -1,4 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+import logging
 from pydantic import BaseModel
 from repository.db_repo import (
     obtener_todos, obtener_por_id, obtener_por_checksum,
@@ -7,8 +8,8 @@ from repository.db_repo import (
 # MODIFICADO: Importamos la función de IA y la de extracción REAL
 from service.pdf_service import generar_resumen_ia, calcular_checksum, extraer_texto_real
 
-# Creamos el enrutador
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 class NombreUpdate(BaseModel):
     nuevo_nombre: str
@@ -31,6 +32,8 @@ def get_document_by_id(doc_id: str):
 
 @router.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
+    # Este mensaje va a salir en la consola de Docker cuando alguien suba un archivo
+    logger.info(f"Recibiendo archivo para procesar: {file.filename}")
     # 1. Validación de extensión
     es_pdf = file.filename.endswith(".pdf")
     es_mime_pdf = file.content_type == "application/pdf"
