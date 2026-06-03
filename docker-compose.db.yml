@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  # --- SERVICIO 1: La Base de Datos (Aislada por seguridad) ---
+  mongodb:
+    image: mongo:latest
+    container_name: pdf_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - pdf_network # Lo conectamos a la ruta nacional
+
+volumes:
+  mongo_data:
+
+# Creamos la "Ruta Nacional" para que otros archivos puedan conectarse acá
+networks:
+  pdf_network:
+    name: pdf_network
+    driver: bridge

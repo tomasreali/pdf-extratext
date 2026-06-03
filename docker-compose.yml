@@ -1,15 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # --- SERVICIO 1: La Base de Datos ---
-  mongodb:
-    image: mongo:latest
-    container_name: pdf_mongo
-    ports:
-      - "27017:27017" # Conecta el puerto de tu compu con el del contenedor
-    volumes:
-      - mongo_data:/data/db # Guarda los datos en un disco virtual para que no se borren
-
   # --- SERVICIO 2: El Cerebro (IA) ---
   ollama:
     image: ollama/ollama:latest
@@ -18,6 +9,8 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama # Guarda los modelos descargados para no bajarlos cada vez
+    networks:
+      - pdf_network # <-- FALTABA ESTO: Conecta a la IA a la red puente
 
   # --- SERVICIO 3: Nuestra API (El Recepcionista) ---
   api:
@@ -28,10 +21,15 @@ services:
     env_file:
       - .env # Le inyecta las variables de entorno
     depends_on:
-      - mongodb
-      - ollama # Le avisa que espere a que Mongo y Ollama arranquen primero
+      - ollama # Le avisa que espere a que Ollama arranque primero
+    networks:
+      - pdf_network # Se conecta a la red externa
 
 # Declaramos los discos virtuales ("volúmenes")
 volumes:
-  mongo_data:
-  ollama_data:
+  ollama_data: # <-- BORRAMOS el mongo_data que había quedado suelto acá
+
+# Le decimos a Docker: "No crees una red nueva, usá la que ya creó la base de datos"
+networks:
+  pdf_network:
+    external: true
