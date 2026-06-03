@@ -1,0 +1,60 @@
+@startuml
+skinparam style strictuml
+skinparam NoteBackgroundColor white
+
+actor Cliente
+participant DocumentController
+participant Validador
+participant DocumentService
+participant Ollama_IA
+participant Repository
+database Mongo
+
+Cliente -> DocumentController: POST /upload
+activate DocumentController
+
+' Validación de formato
+DocumentController -> Validador: Validar pdf
+activate Validador
+Validador --> DocumentController
+deactivate Validador
+
+' Validación de duplicados
+DocumentController -> Validador: Validar Checksum
+activate Validador
+Validador -> Repository: Exist Checksum?
+activate Repository
+Repository -> Mongo: Find by Checksum
+activate Mongo
+Mongo --> Repository
+deactivate Mongo
+Repository --> Validador
+deactivate Repository
+Validador --> DocumentController
+deactivate Validador
+
+' Extracción y procesamiento
+DocumentController -> DocumentService: Extract()
+activate DocumentService
+DocumentService -> Ollama_IA: Generar resumen con IA
+activate Ollama_IA
+Ollama_IA --> DocumentService: Resumen
+deactivate Ollama_IA
+
+' Guardado en BD
+DocumentService -> Repository: Save
+activate Repository
+Repository -> Mongo: Insert
+activate Mongo
+Mongo --> Repository
+deactivate Mongo
+Repository --> DocumentService
+deactivate Repository
+
+DocumentService --> DocumentController
+deactivate DocumentService
+
+' Respuesta final
+DocumentController --> Cliente: 200 HTTP STATUS
+deactivate DocumentController
+@enduml

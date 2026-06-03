@@ -4,7 +4,7 @@ Extrae texto de un PDF proporcionado por el usuario y genera un resumen usando I
 
 ## Integrantes
 
-Reali Tomás, Calvente Matías, Barros Nazareno, Parola Marcos, Rossi Emiliano, Del Pozo Mateo, Altava Julián
+Reali Tomás, Calvente Matías, Barros Nazareno, Parola Marcos, Rossi Emiliano, Del Pozo Mateo
 
 ## Tecnología
 - Python 3.12
