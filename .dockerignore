@@ -1,7 +1,18 @@
-.venv/
-env/
+# Git y secretos (¡CRÍTICO PARA SEGURIDAD!)
+.git
+.gitignore
+.env
+
+# Entornos virtuales de Python
+.venv
 venv/
+env/
+
+# Caché de Python (hace la imagen pesada al pedo)
 __pycache__/
 *.pyc
-.git/
-.env
+*.pyo
+*.pyd
+
+# Frontend (El contenedor de la API no necesita los archivos de la web)
+frontend/
