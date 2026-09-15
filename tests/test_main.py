@@ -16,28 +16,30 @@ def test_health_check():
 def test_subida_exitosa():
     global doc_id_prueba
     # Simulamos un PDF con un contenido falso
-    contenido_pdf = b"Texto simulado para el test de subida"
-    
+    with open("tests/dummy.pdf", "rb") as f:
+        contenido_pdf = f.read()
+
     response = client.post(
         "/upload",
-        files={"file": ("test_doc.pdf", contenido_pdf, "application/pdf")}
+        files={"file": ("dummy.pdf", contenido_pdf, "application/pdf")}
     )
     
     assert response.status_code == 200
     datos = response.json()
     assert "id" in datos
-    assert datos["mensaje"] == "PDF subido, validado y guardado correctamente."
+    assert datos["mensaje"] == "PDF subido, validado y resumido con IA exitosamente."
     
     # Guardamos el ID generado para usarlo en los siguientes tests
     doc_id_prueba = datos["id"]
 
 def test_subida_duplicada():
     # Volvemos a subir EXACTAMENTE el mismo contenido falso
-    contenido_pdf = b"Texto simulado para el test de subida"
-    
+    with open("tests/dummy.pdf", "rb") as f:
+        contenido_pdf = f.read()
+
     response = client.post(
         "/upload",
-        files={"file": ("test_doc.pdf", contenido_pdf, "application/pdf")}
+        files={"file": ("dummy.pdf", contenido_pdf, "application/pdf")}
     )
     
     # Verificamos que el "patovica" del Paso 7 funcione y nos devuelva 409
