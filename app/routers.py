@@ -2,11 +2,10 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 import logging
 from pydantic import BaseModel
 from repository.db_repo import (
-    obtener_todos, obtener_por_id, obtener_por_checksum,
-    guardar_documento, actualizar_nombre, eliminar_documento
+    obtener_todos, obtener_por_id, actualizar_nombre, eliminar_documento
 )
 # MODIFICADO: Importamos la función de IA y la de extracción REAL
-from service.pdf_service import generar_resumen_ia, calcular_checksum, extraer_texto_real
+from service.pdf_service import procesar_archivo
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -32,51 +31,28 @@ def get_document_by_id(doc_id: str):
 
 @router.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    # Este mensaje va a salir en la consola de Docker cuando alguien suba un archivo
     logger.info(f"Recibiendo archivo para procesar: {file.filename}")
-    # 1. Validación de extensión
-    es_pdf = file.filename.endswith(".pdf")
-    es_mime_pdf = file.content_type == "application/pdf"
-    if not es_pdf and not es_mime_pdf:
-        raise HTTPException(status_code=400, detail="El archivo debe ser un documento PDF válido.")
     
-    # 2. Lectura y validación de tamaño
+    # Leemos los bytes del archivo
     contenido = await file.read()
-    TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024
-    if len(contenido) > TAMANO_MAXIMO_BYTES:
-        raise HTTPException(status_code=400, detail="El archivo es demasiado grande. El máximo permitido es 5MB.")
-
-    # 3. Verificación de duplicados (Checksum)
-    checksum_calculado = calcular_checksum(contenido)
-    if obtener_por_checksum(checksum_calculado):
-        raise HTTPException(status_code=409, detail="Este documento ya fue subido y procesado previamente.")
     
-    # 4. Extracción de texto (¡AHORA ES REAL!)
-    # Le pasamos la variable "contenido" que tiene los bytes del archivo
-    texto_extraido = extraer_texto_real(contenido) 
+    # ¡Magia! Delegamos TODO el trabajo a la capa de Service
+    documento_procesado = procesar_archivo(
+        contenido=contenido, 
+        filename=file.filename, 
+        content_type=file.content_type
+    )
     
-    # 5. Generación de resumen con la IA
-    resumen_generado = generar_resumen_ia(texto_extraido)
-    
-    # 6. Persistencia en BD
-    nuevo_documento = {
-        "filename": file.filename,
-        "content_type": file.content_type,
-        "text": texto_extraido,
-        "resumen": resumen_generado,
-        "checksum": checksum_calculado
-    }
-    
-    resultado = guardar_documento(nuevo_documento)
-    
+    # El router ahora es "tonto", solo devuelve la respuesta de éxito
     return {
-        "id": str(resultado.inserted_id), 
-        "filename": file.filename,
-        "checksum": checksum_calculado,
-        "resumen": resumen_generado,
+        "id": documento_procesado.id, 
+        "filename": documento_procesado.filename,
+        "checksum": documento_procesado.checksum,
+        "resumen": documento_procesado.resumen,
         "mensaje": "PDF subido, validado y resumido con IA exitosamente."
     }
 
+    
 @router.patch("/documents/{doc_id}")
 def update_document_name(doc_id: str, datos: NombreUpdate):
     resultado = actualizar_nombre(doc_id, datos.nuevo_nombre)
