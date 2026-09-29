@@ -13,11 +13,13 @@ def mock_db(mocker):
     """Mockeamos las funciones de db_repo que el router importa y usa."""
     mocker.patch("app.routers.obtener_todos", return_value=[{"_id": "fake_id_123", "filename": "test.pdf"}])
     mocker.patch("app.routers.obtener_por_id", return_value={"_id": ObjectId("507f1f77bcf86cd799439011"), "filename": "test.pdf"})
-    mocker.patch("app.routers.obtener_por_checksum", return_value=None)
+    
+    # Estas son las que movimos a pdf_service
+    mocker.patch("service.pdf_service.obtener_por_checksum", return_value=None)
     
     class FakeInsertResult:
         inserted_id = ObjectId("507f1f77bcf86cd799439011")
-    mocker.patch("app.routers.guardar_documento", return_value=FakeInsertResult())
+    mocker.patch("service.pdf_service.guardar_documento", return_value=FakeInsertResult())
     
     class FakeUpdateResult:
         matched_count = 1
@@ -30,7 +32,7 @@ def mock_db(mocker):
 @pytest.fixture
 def mock_ollama(mocker):
     """Mockeamos la función que se comunica con Ollama en el service"""
-    mocker.patch("app.routers.generar_resumen_ia", return_value="Resumen falso generado por mock.")
+    mocker.patch("service.pdf_service.generar_resumen_ia", return_value="Resumen falso generado por mock.")
 
 # --- TESTS ---
 
@@ -56,7 +58,7 @@ def test_subida_exitosa(mock_db, mock_ollama):
 
 def test_subida_duplicada(mocker, mock_ollama):
     # Forzamos a que el sistema crea que ya existe un documento con el mismo checksum
-    mocker.patch("app.routers.obtener_por_checksum", return_value={"_id": "fake_id_123"})
+    mocker.patch("service.pdf_service.obtener_por_checksum", return_value={"_id": "fake_id_123"})
     
     # Abrimos de nuevo el archivo real para pasarlo en la petición
     with open("tests/dummy.pdf", "rb") as f:
