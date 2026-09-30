@@ -1,18 +1,16 @@
 import hashlib
-import os
-import pdfplumber # <-- Importante
-import io         # <-- Importante
+import pdfplumber
+import io
 from ollama import Client
 from fastapi import HTTPException
 from app.models.documento import Documento
+from config.settings import settings
 from repository.db_repo import (
     obtener_por_checksum, guardar_documento,
     obtener_todos, obtener_por_id, actualizar_nombre, eliminar_documento
 )
 
-
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-cliente_ia = Client(host=OLLAMA_URL)
+cliente_ia = Client(host=settings.ollama_url)
 
 def calcular_checksum(contenido: bytes) -> str:
     return hashlib.sha256(contenido).hexdigest()
