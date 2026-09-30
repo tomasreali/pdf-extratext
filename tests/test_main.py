@@ -10,11 +10,10 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_db(mocker):
-    """Mockeamos las funciones de db_repo que el router importa y usa."""
-    mocker.patch("app.routers.obtener_todos", return_value=[{"_id": "fake_id_123", "filename": "test.pdf"}])
-    mocker.patch("app.routers.obtener_por_id", return_value={"_id": ObjectId("507f1f77bcf86cd799439011"), "filename": "test.pdf"})
+    """Mockeamos las funciones del service que el router usa."""
+    mocker.patch("service.pdf_service.obtener_todos", return_value=[{"_id": "fake_id_123", "filename": "test.pdf"}])
+    mocker.patch("service.pdf_service.obtener_por_id", return_value={"_id": "507f1f77bcf86cd799439011", "filename": "test.pdf"})
     
-    # Estas son las que movimos a pdf_service
     mocker.patch("service.pdf_service.obtener_por_checksum", return_value=None)
     
     class FakeInsertResult:
@@ -23,12 +22,11 @@ def mock_db(mocker):
     
     class FakeUpdateResult:
         matched_count = 1
-    mocker.patch("app.routers.actualizar_nombre", return_value=FakeUpdateResult())
+    mocker.patch("service.pdf_service.actualizar_nombre", return_value=FakeUpdateResult())
     
     class FakeDeleteResult:
         deleted_count = 1
-    mocker.patch("app.routers.eliminar_documento", return_value=FakeDeleteResult())
-
+    mocker.patch("service.pdf_service.eliminar_documento", return_value=FakeDeleteResult())
 @pytest.fixture
 def mock_ollama(mocker):
     """Mockeamos la función que se comunica con Ollama en el service"""
@@ -101,6 +99,6 @@ def test_delete_document(mock_db, mocker):
     assert response.status_code == 200
     
     # Para el assert final de que tira 404, mockeamos que ahora no encuentra nada
-    mocker.patch("app.routers.obtener_por_id", return_value=None)
+    mocker.patch("service.pdf_service.obtener_por_id", return_value=None)
     response_verificacion = client.get(f"/documents/{fake_id}")
     assert response_verificacion.status_code == 404
