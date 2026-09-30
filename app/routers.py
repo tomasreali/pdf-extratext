@@ -1,11 +1,11 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import logging
 from pydantic import BaseModel
-from repository.db_repo import (
-    obtener_todos, obtener_por_id, actualizar_nombre, eliminar_documento
+
+from service.pdf_service import (
+    procesar_archivo, listar_documentos, buscar_documento_por_id,
+    modificar_nombre_documento, borrar_documento
 )
-# MODIFICADO: Importamos la función de IA y la de extracción REAL
-from service.pdf_service import procesar_archivo
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -19,14 +19,13 @@ def health_check():
 
 @router.get("/documents")
 def get_all_documents():
-    return {"documentos": obtener_todos()}
+    return {"documentos": listar_documentos()}
 
 @router.get("/documents/{doc_id}")
 def get_document_by_id(doc_id: str):
-    doc = obtener_por_id(doc_id)
+    doc = buscar_documento_por_id(doc_id)
     if not doc:
         raise HTTPException(status_code=404, detail="No se encontró ningún documento con ese ID.")
-    doc["_id"] = str(doc["_id"])
     return doc
 
 @router.post("/upload")
@@ -52,17 +51,16 @@ async def upload_pdf(file: UploadFile = File(...)):
         "mensaje": "PDF subido, validado y resumido con IA exitosamente."
     }
 
-    
 @router.patch("/documents/{doc_id}")
 def update_document_name(doc_id: str, datos: NombreUpdate):
-    resultado = actualizar_nombre(doc_id, datos.nuevo_nombre)
+    resultado = modificar_nombre_documento(doc_id, datos.nuevo_nombre)
     if not resultado or resultado.matched_count == 0:
         raise HTTPException(status_code=404, detail="Documento no encontrado o ID inválido.")
     return {"mensaje": f"Nombre actualizado a {datos.nuevo_nombre}"}
 
 @router.delete("/documents/{doc_id}")
 def delete_document(doc_id: str):
-    resultado = eliminar_documento(doc_id)
+    resultado = borrar_documento(doc_id)
     if not resultado or resultado.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Documento no encontrado o ID inválido.")
     return {"mensaje": "Documento eliminado correctamente"}

@@ -5,7 +5,10 @@ import io         # <-- Importante
 from ollama import Client
 from fastapi import HTTPException
 from app.models.documento import Documento
-from repository.db_repo import obtener_por_checksum, guardar_documento
+from repository.db_repo import (
+    obtener_por_checksum, guardar_documento,
+    obtener_todos, obtener_por_id, actualizar_nombre, eliminar_documento
+)
 
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
@@ -75,3 +78,25 @@ def procesar_archivo(contenido: bytes, filename: str, content_type: str) -> Docu
     documento.id = str(resultado.inserted_id)
     
     return documento
+
+# Estas funciones permiten que el Router hable con el Repositorio
+# pasando siempre por la capa de Service, respetando la arquitectura de 3 capas.
+
+def listar_documentos():
+    """Obtiene todos los documentos de la base de datos."""
+    return obtener_todos()
+
+def buscar_documento_por_id(doc_id: str):
+    """Busca un documento específico por su ID."""
+    doc = obtener_por_id(doc_id)
+    if doc:
+        doc["_id"] = str(doc["_id"])
+    return doc
+
+def modificar_nombre_documento(doc_id: str, nuevo_nombre: str):
+    """Actualiza el nombre de un documento existente."""
+    return actualizar_nombre(doc_id, nuevo_nombre)
+
+def borrar_documento(doc_id: str):
+    """Elimina un documento de la base de datos."""
+    return eliminar_documento(doc_id)
